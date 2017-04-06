@@ -23,15 +23,35 @@ describe("Subdocuments", () => {
       posts: []
     })
     joe.save() //save joe
-      .then(() => User.findOne({ name: "Joe"})) //fetch jose
+      .then(() => User.findOne({ name: "Joe" })) //fetch jose
       .then((user) => {
-        user.posts.push({ title: "New Post"}) //common js operation
+        user.posts.push({ title: "New Post" }) //common js operation
         return user.save() //persist to database. must return to make promise because => {}
       })
       .then(() => User.findOne({ name: "Joe"})) //fetch joe again
       .then((user) => {
         assert(user.posts[0].title === "New Post")
         done()
+      })
+  })
+
+  it("can remove subdocuments", (done) => {
+    const joe = new User({
+      name: "Joe",
+      posts: [{ title: "New Title" }]
+    })
+
+    joe.save()
+      .then(() => User.findOne({ name: "Joe" }))
+      .then((user) => {
+        const post = user.posts[0]
+        post.remove() //after remove from subdocument, must call save
+        return user.save()
+      })
+      .then(() => User.findOne({ name: "Joe"}))
+      .then((user) => {
+        assert(user.posts.length === 0)
+        done();
       })
   })
 
